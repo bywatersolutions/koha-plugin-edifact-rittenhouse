@@ -232,13 +232,13 @@ jobs:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         matrix=$(gh api orgs/bywatersolutions/repos --paginate \
-          --jq '[.[]
+          --jq '.[]
             | select(.archived == false)
             | select(.name | startswith("koha-plugin-edifact-"))
             | select(.name != "koha-plugin-edifact-enhanced")
             | select(.name != "koha-plugin-edifact-enhanced-docs")
-            | {repo: .name, postfix: (.name | sub("koha-plugin-edifact-"; ""))}]' \
-          | jq -c '.')
+            | {repo: .name, postfix: (.name | sub("koha-plugin-edifact-"; ""))}' \
+          | jq -s -c '.')
         echo "Discovered vendors: $matrix"
         echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
