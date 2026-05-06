@@ -61,6 +61,7 @@ find(
         wanted => sub {
             return unless -f $_;
             return if $File::Find::name =~ m{/\.git/};
+            return if $File::Find::name =~ m{/\.github/};
             return if $File::Find::name =~ m{/node_modules/};
             return if $File::Find::name =~ /rename_edi_plugin.pl/;
             return if $File::Find::name =~ /rebase_branches.pl/;
