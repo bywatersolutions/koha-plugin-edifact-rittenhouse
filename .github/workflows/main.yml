@@ -14,7 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #koha-version: [main, stable, oldstable]
+        # oldstable is excluded: the 4.x plugin requires Koha 25.11+ and is
+        # not compatible with older releases.
         koha-version: [main, stable]
 
     steps:
@@ -87,7 +88,7 @@ jobs:
         export KTD_HOME=$(pwd)/../koha-testing-docker
         ktd --name edifact --shell --run "
           cd /kohadevbox/plugins/${{ env.GITHUB_REPO }} &&
-          export PERL5LIB=\$PERL5LIB:. &&
+          export PERL5LIB=\$PERL5LIB:.:/kohadevbox/koha/t/lib:/kohadevbox/koha/t/lib/plugins &&
           prove -v -r -s t/
         "
 
