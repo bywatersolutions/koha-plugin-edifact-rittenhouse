@@ -218,6 +218,99 @@ jobs:
         files: ./*.kpz
         tag_name: ${{ github.ref_name }}
 
+  discover-vendors:
+    name: Discover vendor repos
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'bywatersolutions/koha-plugin-edifact-enhanced' && !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+    steps:
+    - name: List vendor repos
+      id: list
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        matrix=$(gh api orgs/bywatersolutions/repos --paginate \
+          --jq '[.[]
+            | select(.archived == false)
+            | select(.name | startswith("koha-plugin-edifact-"))
+            | select(.name != "koha-plugin-edifact-enhanced")
+            | select(.name != "koha-plugin-edifact-enhanced-docs")
+            | {repo: .name, postfix: (.name | sub("koha-plugin-edifact-"; ""))}]' \
+          | jq -c '.')
+        echo "Discovered vendors: $matrix"
+        echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  release-vendors:
+    name: Build & Release ${{ matrix.vendor.repo }}
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'bywatersolutions/koha-plugin-edifact-enhanced' && !failure() && !cancelled() }}
+    needs: [rebase, discover-vendors]
+    strategy:
+      fail-fast: false
+      matrix:
+        vendor: ${{ fromJson(needs.discover-vendors.outputs.matrix) }}
+    steps:
+    - name: Checkout vendor repo at vendor tag
+      uses: actions/checkout@v4
+      with:
+        repository: bywatersolutions/${{ matrix.vendor.repo }}
+        ref: ${{ format('{0}-{1}', github.ref_name, matrix.vendor.postfix) }}
+        token: ${{ secrets.GH_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        # The origin tag (e.g. v4.1.0) is the source of truth for the version;
+        # vendor tags (v4.1.0-blackstone) inherit the same version.
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${VERSION#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Update package.json version
+      run: |
+        npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+    - name: Update plugin file version
+      run: |
+        PLUGIN_FILE=$(ls Koha/Plugin/Com/ByWaterSolutions/Edifact*.pm)
+        echo "Found plugin file: $PLUGIN_FILE"
+        sed -i -e "s/^our \$VERSION = .*/our \$VERSION = \"${{ steps.version.outputs.version }}\";/" "$PLUGIN_FILE"
+        rm -f "${PLUGIN_FILE}-e"
+
+    - name: Build plugin
+      run: npm run build
+
+    - name: Upload kpz to vendor release
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        TAG="${{ format('{0}-{1}', github.ref_name, matrix.vendor.postfix) }}"
+        REPO="bywatersolutions/${{ matrix.vendor.repo }}"
+        if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+          gh release create "$TAG" \
+            --repo "$REPO" \
+            --title "$TAG" \
+            --notes "Automated release built from ${{ github.repository }} tag ${{ github.ref_name }}"
+        fi
+        gh release upload "$TAG" ./*.kpz --repo "$REPO" --clobber
+
   keepalive:
     name: Keep Alive
     runs-on: ubuntu-latest
