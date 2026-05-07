@@ -194,7 +194,9 @@ jobs:
         # Find the plugin .pm file dynamically
         PLUGIN_FILE=$(ls Koha/Plugin/Com/ByWaterSolutions/Edifact*.pm)
         echo "Found plugin file: $PLUGIN_FILE"
+        RELEASE_DATE=$(date -u +%Y-%m-%d)
         sed -i -e "s/^our \$VERSION = .*/our \$VERSION = \"${{ steps.version.outputs.version }}\";/" "$PLUGIN_FILE"
+        sed -i -E -e "s/^([[:space:]]*date_updated[[:space:]]*=>[[:space:]]*)'[^']*',/\1'${RELEASE_DATE}',/" "$PLUGIN_FILE"
         rm -f "${PLUGIN_FILE}-e"
 
     - name: Commit version updates
@@ -291,7 +293,9 @@ jobs:
       run: |
         PLUGIN_FILE=$(ls Koha/Plugin/Com/ByWaterSolutions/Edifact*.pm)
         echo "Found plugin file: $PLUGIN_FILE"
+        RELEASE_DATE=$(date -u +%Y-%m-%d)
         sed -i -e "s/^our \$VERSION = .*/our \$VERSION = \"${{ steps.version.outputs.version }}\";/" "$PLUGIN_FILE"
+        sed -i -E -e "s/^([[:space:]]*date_updated[[:space:]]*=>[[:space:]]*)'[^']*',/\1'${RELEASE_DATE}',/" "$PLUGIN_FILE"
         rm -f "${PLUGIN_FILE}-e"
 
     - name: Build plugin
