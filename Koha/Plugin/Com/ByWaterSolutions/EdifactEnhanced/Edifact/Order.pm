@@ -154,6 +154,10 @@ sub interchange_header {
     } elsif ( $self->{plugin}->retrieve_data('buyer_san_in_header') && $self->{plugin}->retrieve_data('buyer_san_use_username') ) {
         my $ft = $self->{recipient}->file_transport;
         my $username = $ft ? $ft->user_name : undef;
+        carp 'buyer_san_use_username is enabled but vendor EDI account '
+            . $self->{recipient}->id
+            . ' has no file transport with a user name; falling back to RANDOM identifier'
+            unless $username;
         $hdr .= _interchange_sr_identifier(
             $username,
             $self->{plugin}->retrieve_data('buyer_id_code_qualifier')
