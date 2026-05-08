@@ -152,10 +152,12 @@ sub interchange_header {
         );    # interchange sender
     # If plugin is set to send Buyer SAN in header *and* the vendor username as buyer SAN is set, send that
     } elsif ( $self->{plugin}->retrieve_data('buyer_san_in_header') && $self->{plugin}->retrieve_data('buyer_san_use_username') ) {
+        my $ft = $self->{recipient}->file_transport;
+        my $username = $ft ? $ft->user_name : undef;
         $hdr .= _interchange_sr_identifier(
-            $self->{recipient}->username,
+            $username,
             $self->{plugin}->retrieve_data('buyer_id_code_qualifier')
-        );    # interchange sender
+        );
     # If plugin is set to send Buyer SAN in header *and* the vendor username as buyer SAN is set, send that
     } elsif ( $self->{plugin}->retrieve_data('buyer_san_in_header') && $self->{plugin}->retrieve_data('buyer_san_use_library_ean_split_first_part') ) {
         my ( $ean ) = split(/ /, $self->{sender}->ean );
