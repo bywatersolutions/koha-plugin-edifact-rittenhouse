@@ -70,6 +70,23 @@ This section lets you set the suffix for the Order messages you will transmit to
 
 This section lets you set the suffix for the Invoices messages Koha will look for from the vendor.
 
+### Append .dl to processed files
+
+When enabled, downloaded invoice files are renamed on the vendor server by
+appending `.dl` to the original filename after a successful download.
+
+For example:
+
+`invoice_20260909121212.EIN` → `invoice_20260909121212.EIN.dl`
+
+This option is useful for vendors that expect downloaded files to be marked as
+processed by appending `.dl`, rather than by modifying the existing file suffix.
+
+When this option is disabled, the plugin retains its default behavior of changing
+the first character of the three-character file suffix to `E` (for example,
+`.INV` becomes `.ENV`). If the resulting filename would be unchanged, such as
+with an `.EIN` file, no rename is attempted.
+
 ### LIN values
 
 Each order line in Koha generates an LIN segment in an Edifact Order message.
@@ -223,6 +240,3 @@ For the four charges a vendor might send on one invoice, four rules each filteri
 | 8 | `ALC` `4.0` `=` `RFI` | Supplies | 14 |
 | 8 | `ALC` `4.0` `=` `LFG` | Supplies | 14 |
 
-## Tips and tricks
-
-* Add `NO_GIR:{True}` to a Library EAN description to prevent that account from sending enriched GIR data ( useful for B&T unprocessed accounts )
