@@ -325,17 +325,32 @@ function check_if_buyer_san_use_library_ean_split_first_part() {
             </fieldset>
 
             <fieldset class="rows">
-              <legend>File suffixes</legend>
-              <ol>
-                <li>
-                   <label for="order_file_suffix">Order file: </label>
-                   <input type="text" name="order_file_suffix" id="order_file_suffix" size="20" maxlength="90" value="[% order_file_suffix %]">
-                </li>
-                <li>
-                   <label for="invoice_file_suffix">Invoice file: </label>
-                   <input type="text" name="invoice_file_suffix" id="invoice_file_suffix" size="20" maxlength="90" value="[% invoice_file_suffix %]">
-                </li>
-              </ol>
+                <legend>File suffixes</legend>
+                <ol>
+                    <li>
+                        <label for="order_file_suffix">Order file: </label>
+                        <input type="text" name="order_file_suffix" id="order_file_suffix" size="20" maxlength="90" value="[% order_file_suffix %]">
+                    </li>
+
+                    <li>
+                        <label for="invoice_file_suffix">Invoice file: </label>
+                        <input type="text" name="invoice_file_suffix" id="invoice_file_suffix" size="20" maxlength="90" value="[% invoice_file_suffix %]">
+                    </li>
+
+                    <li>
+                        <label for="append_processed_file_suffix">Append .dl to processed files: </label>
+                        <input
+                            type="checkbox"
+                            name="append_processed_file_suffix"
+                            id="append_processed_file_suffix"
+                            value="1"
+                            [% IF append_processed_file_suffix %]checked="checked"[% END %]
+                        >
+                        <span class="hint">
+                            Append ".dl" to downloaded invoice files after successful processing instead of modifying the existing file suffix.
+                        </span>
+                    </li>
+                </ol>
             </fieldset>
 
             <fieldset class="rows">

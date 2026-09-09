@@ -134,19 +134,24 @@ sub download_messages {
                 push @downloaded_files, $filename;
 
                 # Rename file on server to mark as processed (EDI-specific behavior)
-                my $processed_name = $filename;
-                substr $processed_name, -3, 1, 'E';
 
-                # Some vendors name files with a suffix that already starts with 'E'
-                # ( Ingram uses .EIN ), making this rename a no-op; their servers
-                # reject it with 'already exists', which also aborts the connection
-                # and flags the transport status as an error
-                if ( $processed_name ne $filename ) {
+                my $processed_name;
 
-                    # Mark file as processed using the transport's rename functionality
-                    $self->{file_transport}->rename_file( $filename, $processed_name );
+                if ( $self->{plugin}->retrieve_data('append_processed_file_suffix') ) {
+                    $processed_name = $filename . '.dl';
                 }
-            } else {
+                else {
+                # Existing behavior: change the first character of the 3-character
+                # suffix to "E" (for example, .INV becomes .ENV).
+                    $processed_name = $filename;
+                    substr $processed_name, -3, 1, 'E';
+                }
+
+                if ( $processed_name ne $filename ) {
+                $self->{file_transport}->rename_file( $filename, $processed_name );
+        }
+    }
+            else {
                 carp "Failed to download file: $filename";
             }
         }

@@ -27,7 +27,7 @@ use Koha::EDI;
 use Koha::Items;
 
 ## Here we set our plugin version
-our $VERSION = "4.4.3";
+our $VERSION = "4.4.4";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -35,7 +35,7 @@ our $metadata = {
     author          => 'Kyle M Hall',
     description     => 'Edifact Enhanced plugin',
     date_authored   => '2015-12-21',
-    date_updated    => '2026-08-19',
+    date_updated    => '2026-09-09',
     minimum_version => '25.11.00',
     maximum_version => undef,
     version         => $VERSION,
@@ -623,6 +623,7 @@ sub configure {
             pia_use_product_id                             => $self->retrieve_data('pia_use_product_id'),
             order_file_suffix                              => $self->retrieve_data('order_file_suffix'),
             invoice_file_suffix                            => $self->retrieve_data('invoice_file_suffix'),
+            append_processed_file_suffix                   => $self->retrieve_data('append_processed_file_suffix'),
             buyer_san                                      => $self->retrieve_data('buyer_san'),
             buyer_san_use_username                         => $self->retrieve_data('buyer_san_use_username'),
             buyer_san_use_library_ean_split_first_part     => $self->retrieve_data('buyer_san_use_library_ean_split_first_part'),
@@ -757,6 +758,7 @@ sub configure {
             gir_disable                                    => $cgi->param('gir_disable')               ? "1" : "0",
             order_file_suffix                              => $cgi->param('order_file_suffix')   || q{},
             invoice_file_suffix                            => $cgi->param('invoice_file_suffix') || q{},
+            append_processed_file_suffix                   => $cgi->param('append_processed_file_suffix') ? "1" : "0",
             buyer_san                                      => $cgi->param('buyer_san')           || q{},
             buyer_san_use_username                         => $cgi->param('buyer_san_use_username')                         ? "1" : "0",
             buyer_san_use_library_ean_split_first_part     => $cgi->param('buyer_san_use_library_ean_split_first_part')     ? "1" : "0",
